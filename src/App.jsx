@@ -1,6 +1,6 @@
-import {useState} from 'react';
+import {useEffect, useState} from 'react';
 
-import { addTodo } from './store/todoSlice';
+import { addTodo, fetchTodos } from './store/todoSlice';
 import NewTodoForm from './components/NewTodoForm';
 import TodoList from './components/TodoList';
 
@@ -18,6 +18,10 @@ function App() {
       setText('');
     }
   }
+
+  useEffect(() => {
+    dispatch(fetchTodos());
+  }, [dispatch])
 
   return (
     <div className='App'>
