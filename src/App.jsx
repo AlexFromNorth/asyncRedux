@@ -5,17 +5,19 @@ import NewTodoForm from './components/NewTodoForm';
 import TodoList from './components/TodoList';
 
 import './App.css';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 
 
 function App() {
-  const [text, setText] = useState('');
+  const [title, setTitle] = useState('');
+  const {status, error} = useSelector(state => state.todos);
+
   const dispatch = useDispatch();
 
   const handleAction = () => {
-    if(text.trim().length) {
-      dispatch(addTodo({text}));
-      setText('');
+    if(title.trim().length) {
+      dispatch(addTodo({title}));
+      setTitle('');
     }
   }
 
@@ -26,10 +28,13 @@ function App() {
   return (
     <div className='App'>123
       <NewTodoForm
-        value={text}
-        updateText={setText}
+        value={title}
+        updateText={setTitle}
         handleAction={handleAction}
       />
+      {status === 'loading' && <h2>Loading...</h2>}
+      {error && <h2>An error occured: {error}</h2>}
+
       <TodoList />
     </div>
   );
