@@ -37,7 +37,7 @@ export const deleteTodo = createAsyncThunk(
         throw new Error("Failed to delete todo");
       }
       // удаление из локальной копии
-      dispatch(removeTodo( {id} ));
+      dispatch(removeTodo({ id }));
     } catch (error) {
       console.error(error);
       return rejectWithValue(error.message);
@@ -45,10 +45,73 @@ export const deleteTodo = createAsyncThunk(
   }
 );
 
+export const toggleStatus = createAsyncThunk(
+  "todos/toggleStatus",
+  async function (id, { rejectWithValue, dispatch, getState }) {
+    try {
+      const response = await fetch(
+        `https://jsonplaceholder.typicode.com/todos/${id}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            completed: !getState().todos.todos.find((todo) => todo.id === id)
+              .completed,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to toggle status");
+      }
+
+      dispatch(toggleComplete({ id }));
+    } catch (error) {
+      return rejectWidthValue(error.message);
+    }
+  }
+);
+
+export const addNewTodo = createAsyncThunk(
+    'todos/addNewTodo',
+    async function (title, {rejectWithValue, dispatch}){
+        try{
+            const todo = {
+                title,
+                userId: 1,
+                completed: false,
+            }
+            const response = await fetch(`https://jsonplaceholder.typicode.com/todos`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(todo)
+            })
+
+            if(!response.ok){
+                throw new Error("Failed to add new todo")
+            }
+            const data = await response.json()
+            console.log(data)
+            dispatch(addTodo(todo));
+
+
+        }catch(error){
+            return rejectWithValue(error.message)
+        }
+    }
+)
+
+
+
+
 const setError = (state, action) => {
   state.status = "failed";
   state.error = action.payload;
-  console.log('failed')
+  console.log("failed");
 };
 
 const todoSlice = createSlice({
@@ -60,11 +123,7 @@ const todoSlice = createSlice({
   },
   reducers: {
     addTodo(state, action) {
-      state.todos.push({
-        id: new Date().toISOString(),
-        title: action.payload.title,
-        completed: false,
-      });
+      state.todos.push(action.payload);
     },
     toggleComplete(state, action) {
       const toggledTodo = state.todos.find(
@@ -78,17 +137,35 @@ const todoSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
+      // pending
       .addCase(fetchTodos.pending, (state) => {
         state.status = "loading";
-        console.log("loading");
+        state.error = null;
+        console.log("loading todos");
       })
+      .addCase(deleteTodo.pending, (state) => {
+        state.status = "loading";
+        state.error = null;
+      })
+      .addCase(toggleStatus.pending, (state) => {
+        state.status = "loading";
+        state.error = null;
+      })
+      .addCase(addNewTodo.pending, (state) => {
+        state.status = "loading";
+        state.error = null;
+      })
+      // fulfilled
       .addCase(fetchTodos.fulfilled, (state, action) => {
         state.status = "succeeded";
         state.todos = action.payload;
         console.log("succeeded");
       })
+      // reject
       .addCase(fetchTodos.rejected, setError)
       .addCase(deleteTodo.rejected, setError)
+      .addCase(toggleStatus.rejected, setError)
+      .addCase(addNewTodo.rejected, setError)
   },
 });
 

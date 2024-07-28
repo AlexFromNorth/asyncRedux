@@ -1,6 +1,6 @@
 import {useEffect, useState} from 'react';
 
-import { addTodo, fetchTodos } from './store/todoSlice';
+import { addNewTodo, fetchTodos } from './store/todoSlice';
 import NewTodoForm from './components/NewTodoForm';
 import TodoList from './components/TodoList';
 
@@ -16,7 +16,7 @@ function App() {
 
   const handleAction = () => {
     if(title.trim().length) {
-      dispatch(addTodo({title}));
+      dispatch(addNewTodo(title));
       setTitle('');
     }
   }
